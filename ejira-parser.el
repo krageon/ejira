@@ -53,8 +53,9 @@
              (let ((lang (match-string 1))
                    (body (match-string 2))
                    (md (match-data)))
-               ;; (when (equal lang "none")
-                 (setq lang (symbol-name (language-detection-string body)))
+               (when (equal lang "none")
+                 (setq lang (symbol-name (language-detection-string body))))
+
                  (when (equal lang "awk")
                    ;; Language-detection seems to fallback to awk. In that case
                    ;; it most likely is not code at all. (Some coworkers like to
@@ -62,12 +63,11 @@
                    (setq lang ""))
                  (when (equal lang "emacslisp")
                    (setq lang "elisp"))
-                 ;; )
                (prog1
                    (concat
-                    "#+BEGIN_SRC " lang "\n"
-                    (replace-regexp-in-string "^" "  " body)
-                    "\n#+END_SRC")
+                    "#+begin_src " lang "\n"
+                    body
+                    "\n#+end_src")
 
                  ;; Auto-detecting language alters match data, restore it.
                  (set-match-data md)))))
@@ -81,9 +81,25 @@
                    (md (match-data)))
                (prog1
                    (concat
-                    "#+BEGIN_QUOTE\n"
-                    (replace-regexp-in-string "^" "  " body)
-                    "\n#+END_QUOTE")
+                    "#+begin_quote\n"
+                    body
+                    "\n#+end_quote")
+
+                 ;; Auto-detecting language alters match data, restore it.
+                 (set-match-data md)))))
+
+        ;; example/noformat block
+        ("^{noformat}\\(.*\\(?:
+.*\\)*?\\)?
+?{noformat}"
+         . (lambda ()
+             (let ((body (match-string 1))
+                   (md (match-data)))
+               (prog1
+                   (concat
+                    "#+begin_example\n"
+                    body
+                    "\n#+end_example")
 
                  ;; Auto-detecting language alters match data, restore it.
                  (set-match-data md)))))
